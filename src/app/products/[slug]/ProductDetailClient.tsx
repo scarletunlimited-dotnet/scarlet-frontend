@@ -805,55 +805,6 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
     return product.stock || 999;
   }, [product, totalVariantStock]);
 
-  // Memoize stock display JSX to avoid calling useMemo inside JSX (React Hooks violation)
-  const stockDisplay = React.useMemo(() => {
-    if (!product) return null;
-    
-    const hasVariants = (product.sizes && product.sizes.length > 0) || (product.colors && product.colors.length > 0);
-    
-    if (hasVariants && product.variantStock) {
-      // Show both total and per-variant stock
-      return (
-        <>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-            <span className="text-sm font-semibold text-blue-800">
-              Total Stock: <strong>{totalVariantStock}</strong> {totalVariantStock === 1 ? 'unit' : 'units'} across all variants
-            </span>
-          </div>
-          {(selectedSize || selectedColor) && currentStock > 0 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-              <span className="text-sm font-semibold text-green-800">
-                Selected Variant ({selectedSize || 'N/A'}, {selectedColor || 'N/A'}): <strong>{currentStock}</strong> {currentStock === 1 ? 'unit' : 'units'} available
-              </span>
-            </div>
-          )}
-          {(selectedSize || selectedColor) && currentStock === 0 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
-              <span className="text-sm font-semibold text-red-800">
-                Selected Variant ({selectedSize || 'N/A'}, {selectedColor || 'N/A'}): <strong>Out of Stock</strong>
-              </span>
-            </div>
-          )}
-        </>
-      );
-    } else {
-      // Single stock display
-      return currentStock > 0 ? (
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-          <span className="text-sm font-semibold text-green-800">
-            Stock Quantity: <strong>{currentStock}</strong> {currentStock === 1 ? 'unit' : 'units'} available
-          </span>
-        </div>
-      ) : (
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
-          <span className="text-sm font-semibold text-red-800">
-            Stock Status: <strong>Out of Stock</strong> (0 units available)
-          </span>
-        </div>
-      );
-    }
-  }, [product, product?.sizes, product?.colors, product?.variantStock, product?.stock, selectedSize, selectedColor, variantSelections.length, currentStock, totalVariantStock]);
-  
   // NOW we can do early returns after all hooks are called
   // Show loading skeleton while fetching data
   if (loading) {
@@ -904,7 +855,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
       
       <div className="container-herlan py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-8">
+        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
           <Link href="/" className="hover:text-red-700 transition-colors duration-200">Home</Link>
           <ChevronRightIcon />
           <Link href="/products" className="hover:text-red-700 transition-colors duration-200">Products</Link>
@@ -912,7 +863,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
           <span className="text-gray-900 font-medium">{product.title}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-12">
           {/* Product Images */}
           <div className="relative">
             <div className="sticky top-8">
@@ -944,20 +895,31 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
 
             {/* Coming Soon Badge */}
             {isComingSoon && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-lg mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-lg mb-2">
                 <span className="text-sm font-semibold text-purple-800">
                   🎉 Coming Soon - Preorder Available
                 </span>
               </div>
             )}
-            {/* Out of Stock Badge - Only show when out of stock and not coming soon */}
-            {!isComingSoon && !isInStock && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-sm font-semibold text-red-700">
-                  Out of Stock
-                </span>
-              </div>
+            {/* Stock Status Badge */}
+            {!isComingSoon && (
+              <>
+                {isInStock ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-sm font-semibold text-green-700">
+                      In Stock
+                    </span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-sm font-semibold text-red-700">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Title */}
@@ -981,7 +943,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
             </div>
 
             {/* Mobile: Wishlist & Share Buttons (below price) */}
-            <div className="flex items-center gap-3 md:hidden pt-3 pb-4">
+            <div className="flex items-center gap-3 md:hidden pt-2 pb-2">
               <button
                 onClick={handleWishlistToggle}
                 className={`group relative flex items-center justify-center w-12 h-12 border-2 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-lg ${
@@ -1013,14 +975,9 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
               )}
             </div>
 
-            {/* Stock Quantity Display - SSLCommerz Compliance */}
-            <div className="mb-4 space-y-2">
-              {stockDisplay}
-            </div>
-
             {/* Quick Description */}
             {product.description && (
-              <div className="py-5 pl-0 pr-5">
+              <div className="py-3 pl-0 pr-5">
                 <p className="text-gray-700 leading-relaxed text-base">
                   {product.description.substring(0, 200)}
                   {product.description.length > 200 && '...'}
@@ -1041,7 +998,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
 
             {/* Coming Soon Notice */}
             {isComingSoon && (
-              <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4 mb-6">
+              <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4 mb-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
@@ -1062,7 +1019,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
             )}
             {/* Out of Stock Notice - Only show when out of stock and not coming soon */}
             {!isComingSoon && !isInStock && (
-              <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-lg p-5 shadow-sm">
+              <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-lg p-4 mb-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   <span className="text-sm font-semibold text-red-700">
@@ -1115,7 +1072,7 @@ export default function ProductDetailClient({ initialProduct = null }: ProductDe
             )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
               {isComingSoon ? (
                 <button
                   onClick={handlePreorder}
