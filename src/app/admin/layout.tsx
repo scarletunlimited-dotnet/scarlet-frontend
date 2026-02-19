@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { useAdminSession } from '@/hooks/useAdminSession';
+import SessionTimeoutWarning from '@/components/admin/SessionTimeoutWarning';
 
 export default function AdminLayout({
   children,
@@ -15,6 +17,9 @@ export default function AdminLayout({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [redirectingToLogin, setRedirectingToLogin] = useState(false);
+  
+  // Session timeout management for admin users
+  const { timeUntilTimeout, isWarningActive, extendSession } = useAdminSession();
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated or not admin/staff
@@ -135,6 +140,15 @@ export default function AdminLayout({
 
   return (
     <div className="section-full-vh bg-gradient-to-br from-red-50 via-white to-rose-50">
+      {/* Session Timeout Warning Modal */}
+      {/* Hook already filters for admin/staff, so no need to check again */}
+      {isWarningActive && (
+        <SessionTimeoutWarning
+          timeUntilTimeout={timeUntilTimeout}
+          onExtend={extendSession}
+        />
+      )}
+
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 

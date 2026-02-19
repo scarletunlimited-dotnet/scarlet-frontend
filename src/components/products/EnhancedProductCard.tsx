@@ -129,11 +129,6 @@ const EnhancedProductCard = React.memo(function EnhancedProductCard({
           
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1">
-            {discountPercentage > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                -{discountPercentage}%
-              </span>
-            )}
             {isComingSoon && (
               <span className="bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                 Coming Soon
@@ -142,11 +137,6 @@ const EnhancedProductCard = React.memo(function EnhancedProductCard({
             {!isComingSoon && isOutOfStock && (
               <span className="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                 Out of Stock
-              </span>
-            )}
-            {!isComingSoon && isLowStock && (
-              <span className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                Only {product.stock} left
               </span>
             )}
           </div>
@@ -215,13 +205,18 @@ const EnhancedProductCard = React.memo(function EnhancedProductCard({
           
           
           {/* Price */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-gray-900">
               {formatPrice(product.price.amount)}
             </span>
             {product.price.originalAmount && (
               <span className="text-sm text-gray-500 line-through">
                 {formatPrice(product.price.originalAmount)}
+              </span>
+            )}
+            {discountPercentage > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                -{discountPercentage}%
               </span>
             )}
           </div>

@@ -1,21 +1,40 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@/lib/hooks';
-import { authApi, apiUtils } from '@/lib/api';
+import { apiUtils } from '@/lib/api';
 import { useAuth } from '@/lib/context';
 import type { LoginFormData } from '@/lib/types';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
+  const [sessionTimeoutMessage, setSessionTimeoutMessage] = useState<string | null>(null);
+
+  // Check for session timeout redirect
+  useEffect(() => {
+    const reason = searchParams.get('reason');
+    const message = searchParams.get('message');
+    
+    if (reason === 'session-timeout' && message) {
+      setSessionTimeoutMessage(decodeURIComponent(message));
+      // Clear the message from URL after displaying using Next.js router
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('reason');
+      params.delete('message');
+      const newUrl = params.toString() ? `?${params.toString()}` : '';
+      router.replace(newUrl || '/login', { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const { values, errors, handleChange, handleSubmit, isValid } = useForm<LoginFormData>({
     initialValues: {
@@ -97,6 +116,16 @@ export default function LoginPage() {
       <div className="mt-6 sm:mt-8 mx-auto w-full max-w-md">
         <div className="bg-white py-6 px-4 shadow sm:rounded-lg sm:py-8 sm:px-10">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {sessionTimeoutMessage && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md flex items-start">
+                <ExclamationTriangleIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Session Expired</p>
+                  <p className="text-sm mt-1">{sessionTimeoutMessage}</p>
+                </div>
+              </div>
+            )}
+            
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
                 {error}
@@ -110,7 +139,7 @@ export default function LoginPage() {
                 type="text"
                 value={values.identifier}
                 onChange={handleChange}
-                error={errors.identifier}
+                {...(errors.identifier && { error: errors.identifier })}
                 placeholder="Enter your email or phone number"
                 autoComplete="username"
                 required
@@ -124,7 +153,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={values.password}
                 onChange={handleChange}
-                error={errors.password}
+                {...(errors.password && { error: errors.password })}
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
@@ -231,5 +260,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-r-transparent"></div>
+          <p className="mt-4 text-red-700 font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }
