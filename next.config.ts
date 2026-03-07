@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // Production optimizations
@@ -201,4 +202,10 @@ const nextConfig: NextConfig = {
 
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG || "scarlet",
+  project: process.env.SENTRY_PROJECT || "scarlet-frontend",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+});
