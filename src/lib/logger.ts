@@ -45,10 +45,16 @@ class Logger {
   error(message: string, error?: Error | any): void {
     console.error(`❌ ${message}`, error || '');
     
-    // In production, you might want to send errors to a monitoring service
+    // Send to Sentry in production (client-side)
     if (!isDevelopment && isClient) {
-      // TODO: Send to error monitoring service (e.g., Sentry, LogRocket)
-      // errorMonitoringService.captureError(message, error);
+      try {
+        void import('@sentry/nextjs').then((Sentry) => {
+          const err = error instanceof Error ? error : new Error(String(error ?? message));
+          Sentry.captureException(err, { extra: { message } });
+        });
+      } catch {
+        // Ignore Sentry import/send failures
+      }
     }
   }
 
