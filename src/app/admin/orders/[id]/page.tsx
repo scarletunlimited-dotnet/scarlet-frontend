@@ -23,7 +23,7 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
 import { BDTIcon } from '../../../../components/ui/BDTIcon';
-import { useToast } from '@/lib/context';
+import { useToast, useAuth } from '@/lib/context';
 import { adminApi } from '@/lib/api';
 import type { AdminOrder } from '@/lib/admin-types';
 import Invoice from '@/components/admin/Invoice';
@@ -90,6 +90,8 @@ interface BackendOrder {
 export default function OrderDetailPage() {
   const params = useParams();
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const canMutate = user?.role !== 'monitor';
   const [order, setOrder] = useState<AdminOrder | null>(null);
   const [timeline, setTimeline] = useState<OrderTimeline[]>([]);
   const [notes, setNotes] = useState<OrderNote[]>([]);
@@ -532,20 +534,24 @@ export default function OrderDetailPage() {
                 <PrinterIcon className="w-4 h-4 mr-2" />
                 Print
               </button>
-              <button
-                onClick={() => setShowStatusModal(true)}
-                className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                <ArrowPathIcon className="w-4 h-4 mr-2" />
-                Update Status
-              </button>
-              <Link
-                href={`/admin/orders/${order._id}/edit`}
-                className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <PencilIcon className="w-4 h-4 mr-2" />
-                Edit
-              </Link>
+              {canMutate && (
+                <>
+                  <button
+                    onClick={() => setShowStatusModal(true)}
+                    className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    <ArrowPathIcon className="w-4 h-4 mr-2" />
+                    Update Status
+                  </button>
+                  <Link
+                    href={`/admin/orders/${order._id}/edit`}
+                    className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <PencilIcon className="w-4 h-4 mr-2" />
+                    Edit
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -775,7 +781,7 @@ export default function OrderDetailPage() {
                 <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
               </div>
               <div className="p-6 space-y-3">
-                {order.isPreorder && order.status === 'preorder' && (
+                {canMutate && order.isPreorder && order.status === 'preorder' && (
                   <button
                     onClick={() => {
                       if (confirm(`Fulfill preorder for ${order.orderNumber}? This will change the status to "confirmed" and notify the customer to pay the remaining 50%.`)) {
@@ -788,13 +794,15 @@ export default function OrderDetailPage() {
                     Fulfill Preorder
                   </button>
                 )}
-                <button
-                  onClick={() => setShowStatusModal(true)}
-                  className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <ArrowPathIcon className="w-4 h-4 mr-3 text-gray-400" />
-                  Update Status
-                </button>
+                {canMutate && (
+                  <button
+                    onClick={() => setShowStatusModal(true)}
+                    className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <ArrowPathIcon className="w-4 h-4 mr-3 text-gray-400" />
+                    Update Status
+                  </button>
+                )}
                 <button 
                   onClick={() => {
                     addToast({
@@ -809,25 +817,27 @@ export default function OrderDetailPage() {
                   <TruckIcon className="w-4 h-4 mr-3 text-gray-300" />
                   <span className="line-through">Add Tracking</span>
                 </button>
-                <button 
-                  onClick={() => {
-                    if (order.status !== 'delivered' && order.status !== 'cancelled') {
-                      addToast({
-                        type: 'error',
-                        title: 'Cannot Refund',
-                        message: 'Only delivered or cancelled orders can be refunded.'
-                      });
-                      return;
-                    }
-                    if (confirm(`Process refund for order ${order.orderNumber}? This will change the order status to "refunded".`)) {
-                      handleStatusUpdate('refunded');
-                    }
-                  }}
-                  className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <BDTIcon className="w-4 h-4 mr-3 text-gray-400" />
-                  Process Refund
-                </button>
+                {canMutate && (
+                  <button 
+                    onClick={() => {
+                      if (order.status !== 'delivered' && order.status !== 'cancelled') {
+                        addToast({
+                          type: 'error',
+                          title: 'Cannot Refund',
+                          message: 'Only delivered or cancelled orders can be refunded.'
+                        });
+                        return;
+                      }
+                      if (confirm(`Process refund for order ${order.orderNumber}? This will change the order status to "refunded".`)) {
+                        handleStatusUpdate('refunded');
+                      }
+                    }}
+                    className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <BDTIcon className="w-4 h-4 mr-3 text-gray-400" />
+                    Process Refund
+                  </button>
+                )}
                 <button 
                   onClick={() => setShowInvoicePreview(true)}
                   className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
@@ -861,7 +871,7 @@ export default function OrderDetailPage() {
                   <span className="text-sm text-gray-600">Payment Status</span>
                   <div className="flex items-center gap-2">
                     {getPaymentStatusBadge(order.paymentStatus)}
-                    {(order.paymentStatus === 'partial' || order.paymentStatus === 'pending') && (
+                    {canMutate && (order.paymentStatus === 'partial' || order.paymentStatus === 'pending') && (
                       <div className="relative">
                         <button
                           onClick={() => {

@@ -82,7 +82,7 @@ function LoginPageContent() {
         } else {
           // Check if user is admin/staff and redirect accordingly
           const userFromToken = apiUtils.getUserFromToken();
-          if (userFromToken?.role === 'admin' || userFromToken?.role === 'staff') {
+          if (userFromToken?.role === 'admin' || userFromToken?.role === 'staff' || userFromToken?.role === 'monitor') {
             router.push('/admin');
           } else {
             router.push('/account');

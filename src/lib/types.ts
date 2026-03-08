@@ -264,7 +264,7 @@ export interface Product extends BaseEntity {
 }
 
 // User Related Types
-export type UserRole = 'admin' | 'staff' | 'customer';
+export type UserRole = 'admin' | 'staff' | 'monitor' | 'customer';
 
 export interface User extends BaseEntity {
   email: string;

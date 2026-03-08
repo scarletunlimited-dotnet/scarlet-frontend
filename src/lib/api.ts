@@ -1334,7 +1334,7 @@ export const adminApi = {
       return fetchJsonAuth<AdminPaginatedResponse<AdminUser>>(url);
     },
 
-    updateUserRole: (userId: string, role: 'admin' | 'staff' | 'customer'): Promise<{ message: string }> => {
+    updateUserRole: (userId: string, role: 'admin' | 'staff' | 'monitor' | 'customer'): Promise<{ message: string }> => {
       return fetchJsonAuth(`/admin/users/${userId}/role`, {
         method: 'PATCH',
         body: JSON.stringify({ role })

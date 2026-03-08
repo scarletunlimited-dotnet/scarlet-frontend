@@ -1,5 +1,6 @@
 "use client";
 import * as React from 'react';
+import { useAuth } from '@/lib/context';
 import { categoryApi } from '../../../lib/api';
 import type { Category, CategoryTree } from '../../../lib/types';
 import { 
@@ -20,6 +21,8 @@ import Link from 'next/link';
 import SortableCategoryList from '../../../components/admin/SortableCategoryList';
 
 export default function AdminCategoriesPage() {
+  const { user } = useAuth();
+  const canMutate = user?.role !== 'monitor';
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [categoryTree, setCategoryTree] = React.useState<CategoryTree[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -532,26 +535,30 @@ export default function AdminCategoriesPage() {
               <div className="w-4 h-4 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></div>
             )}
             
-            <Link
-              href={`/admin/categories/${category._id}/edit`}
-              className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Edit category"
-            >
-              <PencilIcon className="w-4 h-4" />
-            </Link>
-            
-            <button
-              onClick={() => handleDeleteCategory(category._id!)}
-              disabled={isDeleting}
-              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-              title="Delete category"
-            >
+            {canMutate && (
+              <>
+                <Link
+                  href={`/admin/categories/${category._id}/edit`}
+                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Edit category"
+                >
+                  <PencilIcon className="w-4 h-4" />
+                </Link>
+                
+                <button
+                  onClick={() => handleDeleteCategory(category._id!)}
+                  disabled={isDeleting}
+                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                  title="Delete category"
+                >
               {isDeleting ? (
                 <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <TrashIcon className="w-4 h-4" />
               )}
             </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -619,16 +626,18 @@ export default function AdminCategoriesPage() {
           </div>
 
           {/* Add Category */}
-          <Link
-            href="/admin/categories/new"
-            className="flex items-center space-x-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span>Add Category</span>
-          </Link>
+          {canMutate && (
+            <Link
+              href="/admin/categories/new"
+              className="flex items-center space-x-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Add Category</span>
+            </Link>
+          )}
 
           {/* Reorder Controls */}
-          {!isReordering ? (
+          {canMutate && !isReordering ? (
             <button
               onClick={handleStartReordering}
               className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors bg-white text-gray-900 font-medium"
@@ -636,7 +645,7 @@ export default function AdminCategoriesPage() {
               <ArrowsUpDownIcon className="w-5 h-5 text-gray-700" />
               <span className="text-gray-900 font-medium">Reorder Homepage Categories</span>
             </button>
-          ) : (
+          ) : canMutate && isReordering ? (
             <div className="flex space-x-2">
               <button
                 onClick={handleSaveReordering}
@@ -655,7 +664,7 @@ export default function AdminCategoriesPage() {
                 <span className="text-gray-900 font-medium">Cancel</span>
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 

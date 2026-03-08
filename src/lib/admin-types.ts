@@ -24,7 +24,7 @@ export interface AdminUser {
   phone?: string;
   firstName: string;
   lastName?: string;
-  role: 'admin' | 'staff' | 'customer';
+  role: 'admin' | 'staff' | 'monitor' | 'customer';
   isEmailVerified?: boolean;
   isPhoneVerified?: boolean;
   createdAt?: string;
@@ -122,7 +122,7 @@ export interface AdminFilters {
 }
 
 export interface AdminUserFilters extends AdminFilters {
-  role?: 'admin' | 'staff' | 'customer';
+  role?: 'admin' | 'staff' | 'monitor' | 'customer';
   isEmailVerified?: boolean;
   isPhoneVerified?: boolean;
   dateFrom?: string;
@@ -287,6 +287,8 @@ export interface AdminNavItem {
   icon?: React.ComponentType<{ className?: string }>;
   badge?: number;
   children?: AdminNavItem[];
+  /** If true, monitor role can see this item (view-only access) */
+  monitorAllowed?: boolean;
 }
 
 // Enhanced Product interface

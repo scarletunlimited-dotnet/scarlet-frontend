@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/context';
 import { 
   HomeIcon,
   HeartIcon,
@@ -28,6 +29,7 @@ const navigationItems: AdminNavItem[] = [
     label: 'Dashboard',
     href: '/admin',
     icon: HomeIcon,
+    monitorAllowed: true,
   },
   {
     id: 'users',
@@ -52,12 +54,14 @@ const navigationItems: AdminNavItem[] = [
     label: 'Product Catalog',
     href: '/admin/products',
     icon: SparklesIcon,
+    monitorAllowed: true,
   },
   {
     id: 'categories',
     label: 'Categories',
     href: '/admin/categories',
     icon: DocumentTextIcon,
+    monitorAllowed: true,
   },
   {
     id: 'media',
@@ -93,6 +97,7 @@ const navigationItems: AdminNavItem[] = [
     label: 'Order Management',
     href: '/admin/orders',
     icon: ShoppingCartIcon,
+    monitorAllowed: true,
   },
   {
     id: 'credits',
@@ -128,6 +133,11 @@ const navigationItems: AdminNavItem[] = [
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isMonitor = user?.role === 'monitor';
+  const visibleItems = isMonitor
+    ? navigationItems.filter((item) => item.monitorAllowed)
+    : navigationItems;
 
   return (
     <>
@@ -150,7 +160,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           {/* Navigation */}
           <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto">
             <nav className="px-3 space-y-1">
-              {navigationItems.map((item) => {
+              {visibleItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                 
                 return (
@@ -243,7 +253,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           {/* Navigation */}
           <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto">
             <nav className="px-3 space-y-1">
-              {navigationItems.map((item) => {
+              {visibleItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                 
                 return (
