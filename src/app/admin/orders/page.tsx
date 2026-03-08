@@ -27,7 +27,7 @@ import {
   EnvelopeIcon
 } from '@heroicons/react/24/outline';
 import { BDTIcon } from '../../../components/ui/BDTIcon';
-import { useToast } from '@/lib/context';
+import { useToast, useAuth } from '@/lib/context';
 import { adminApi } from '@/lib/api';
 import type { AdminOrder } from '@/lib/admin-types';
 
@@ -104,6 +104,8 @@ export default function OrdersPage() {
   });
 
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const canMutate = user?.role !== 'monitor';
 
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {
@@ -667,8 +669,8 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Bulk Actions */}
-        {selectedOrders.length > 0 && (
+        {/* Bulk Actions - hidden for monitor (view only) */}
+        {canMutate && selectedOrders.length > 0 && (
           <div className="p-4 bg-blue-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -720,14 +722,16 @@ export default function OrdersPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
-                    />
-                  </th>
+                  {canMutate && (
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
+                      />
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Order
                   </th>
@@ -754,14 +758,16 @@ export default function OrdersPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedOrders.includes(order._id)}
-                        onChange={() => handleSelectOrder(order._id)}
-                        className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
-                      />
-                    </td>
+                    {canMutate && (
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.includes(order._id)}
+                          onChange={() => handleSelectOrder(order._id)}
+                          className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
@@ -810,12 +816,14 @@ export default function OrdersPage() {
                         >
                           View Details
                         </Link>
-                        <button
-                          onClick={() => handleQuickStatusChange(order)}
-                          className="text-blue-600 hover:text-blue-900 font-medium"
-                        >
-                          Update Status
-                        </button>
+                        {canMutate && (
+                          <button
+                            onClick={() => handleQuickStatusChange(order)}
+                            className="text-blue-600 hover:text-blue-900 font-medium"
+                          >
+                            Update Status
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -832,12 +840,14 @@ export default function OrdersPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.includes(order._id)}
-                      onChange={() => handleSelectOrder(order._id)}
-                      className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
-                    />
+                    {canMutate && (
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(order._id)}
+                        onChange={() => handleSelectOrder(order._id)}
+                        className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
+                      />
+                    )}
                     <h3 className="text-lg font-medium text-gray-900">
                       {order.orderNumber}
                     </h3>
@@ -905,12 +915,14 @@ export default function OrdersPage() {
                       >
                         <EyeIcon className="w-4 h-4" />
                       </Link>
-                      <Link
-                        href={`/admin/orders/${order._id}/edit`}
-                        className="p-2 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50"
-                      >
-                        <PencilIcon className="w-4 h-4" />
-                      </Link>
+                      {canMutate && (
+                        <Link
+                          href={`/admin/orders/${order._id}/edit`}
+                          className="p-2 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </Link>
+                      )}
                       <button
                         onClick={() => {/* Print order */}}
                         className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50"

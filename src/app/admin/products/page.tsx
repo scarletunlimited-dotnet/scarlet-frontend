@@ -16,7 +16,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { adminApi } from '@/lib/api';
-import { useToast } from '@/lib/context';
+import { useToast, useAuth } from '@/lib/context';
 import type { AdminProduct } from '@/lib/admin-types';
 import AdminPageWrapper, { useAdminPageState } from '../../../components/admin/AdminPageWrapper';
 import EmptyState, { EmptyProductsState } from '../../../components/admin/EmptyState';
@@ -58,6 +58,8 @@ const SORT_OPTIONS = [
 
 export default function ProductsPage() {
   const { loading, error, executeWithErrorHandling, retry } = useAdminPageState();
+  const { user } = useAuth();
+  const canMutate = user?.role !== 'monitor';
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -309,13 +311,15 @@ export default function ProductsPage() {
               <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
               Import
             </button>
-            <Link
-              href="/admin/products/new"
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-700 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-            >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Add Product
-            </Link>
+            {canMutate && (
+              <Link
+                href="/admin/products/new"
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-700 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Add Product
+              </Link>
+            )}
           </div>
         </div>
 
@@ -535,7 +539,7 @@ export default function ProductsPage() {
         )}
 
         {/* Bulk Actions */}
-        {selectedProducts.length > 0 && (
+        {canMutate && selectedProducts.length > 0 && (
           <div className="p-4 bg-blue-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -581,12 +585,14 @@ export default function ProductsPage() {
             <div key={product._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
               {/* Product Image */}
               <div className="relative aspect-square bg-gray-100">
-                <input
-                  type="checkbox"
-                  checked={selectedProducts.includes(product._id!)}
-                  onChange={() => handleSelectProduct(product._id!)}
-                  className="absolute top-3 left-3 w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500 z-10"
-                />
+                {canMutate && (
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.includes(product._id!)}
+                    onChange={() => handleSelectProduct(product._id!)}
+                    className="absolute top-3 left-3 w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500 z-10"
+                  />
+                )}
                 <img
                   src={product.images[0] || '/logo/scarletlogo.png'}
                   alt={product.title}
@@ -645,28 +651,32 @@ export default function ProductsPage() {
                     >
                       <EyeIcon className="w-4 h-4" />
                     </Link>
-                    <Link
-                      href={`/admin/products/${product._id}/edit`}
-                      className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                      title="Edit"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={async () => {
-                        try {
-                          await adminApi.products.updateProductStock(product._id!, (product.stock || 0) + 10);
-                          await fetchProducts();
-                          addToast({ type: 'success', title: 'Stock Updated', message: 'Product stock increased by 10' });
-                        } catch (error) {
-                          addToast({ type: 'error', title: 'Error', message: 'Failed to update stock' });
-                        }
-                      }}
-                      className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
-                      title="Add Stock"
-                    >
-                      <DocumentDuplicateIcon className="w-4 h-4" />
-                    </button>
+                    {canMutate && (
+                      <>
+                        <Link
+                          href={`/admin/products/${product._id}/edit`}
+                          className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                          title="Edit"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await adminApi.products.updateProductStock(product._id!, (product.stock || 0) + 10);
+                              await fetchProducts();
+                              addToast({ type: 'success', title: 'Stock Updated', message: 'Product stock increased by 10' });
+                            } catch (error) {
+                              addToast({ type: 'error', title: 'Error', message: 'Failed to update stock' });
+                            }
+                          }}
+                          className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                          title="Add Stock"
+                        >
+                          <DocumentDuplicateIcon className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                   
                   <div className="flex items-center text-xs text-gray-500">
@@ -686,14 +696,16 @@ export default function ProductsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedProducts.length === products.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
-                    />
-                  </th>
+                  {canMutate && (
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.length === products.length}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
+                      />
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Product
                   </th>
@@ -720,14 +732,16 @@ export default function ProductsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product) => (
                   <tr key={product._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedProducts.includes(product._id!)}
-                        onChange={() => handleSelectProduct(product._id!)}
-                        className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
-                      />
-                    </td>
+                    {canMutate && (
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product._id!)}
+                          onChange={() => handleSelectProduct(product._id!)}
+                          className="w-4 h-4 text-red-700 bg-white border-gray-300 rounded focus:ring-red-500"
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <img
@@ -789,12 +803,14 @@ export default function ProductsPage() {
                         >
                           View
                         </Link>
-                        <Link
-                          href={`/admin/products/${product._id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Edit
-                        </Link>
+                        {canMutate && (
+                          <Link
+                            href={`/admin/products/${product._id}/edit`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Edit
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -897,7 +913,7 @@ export default function ProductsPage() {
             }}
           />
         ) : (
-          <EmptyProductsState onCreateProduct={() => window.location.href = '/admin/products/new'} />
+          <EmptyProductsState onCreateProduct={canMutate ? () => window.location.href = '/admin/products/new' : undefined} />
         )
       )}
     </AdminPageWrapper>

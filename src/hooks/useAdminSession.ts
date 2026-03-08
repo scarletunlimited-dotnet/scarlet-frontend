@@ -136,7 +136,7 @@ export function useAdminSession(): UseAdminSessionReturn {
 
   // Memoize admin check to avoid unnecessary re-renders
   const isAdminUser = useMemo(() => {
-    return user && (user.role === 'admin' || user.role === 'staff');
+    return user && (user.role === 'admin' || user.role === 'staff' || user.role === 'monitor');
   }, [user]);
 
   useEffect(() => {

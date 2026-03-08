@@ -102,7 +102,7 @@ export default function AdminUsersPage() {
     setShowDeleteModal(true);
   };
 
-  const handleRoleUpdate = async (userId: string, newRole: 'admin' | 'staff' | 'customer') => {
+  const handleRoleUpdate = async (userId: string, newRole: 'admin' | 'staff' | 'monitor' | 'customer') => {
     // Check if we're downgrading an admin user
     const isDowngradingAdmin = selectedUser?.role === 'admin' && newRole !== 'admin';
     
@@ -193,6 +193,7 @@ export default function AdminUsersPage() {
     const badges = {
       admin: 'bg-gradient-to-r from-purple-500 to-violet-500 text-white',
       staff: 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white',
+      monitor: 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white',
       customer: 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
     };
     
@@ -496,6 +497,7 @@ export default function AdminUsersPage() {
                     <option value="">All Roles</option>
                     <option value="customer">Customer</option>
                     <option value="staff">Staff</option>
+                    <option value="monitor">Monitor</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
@@ -697,7 +699,8 @@ export default function AdminUsersPage() {
                         {getRoleBadge(selectedUser.role)}
                         <span className="text-sm text-gray-500">
                           {selectedUser.role === 'admin' ? 'Full Access' : 
-                           selectedUser.role === 'staff' ? 'Limited Access' : 'Customer Access'}
+                           selectedUser.role === 'staff' ? 'Limited Access' : 
+                           selectedUser.role === 'monitor' ? 'View Only' : 'Customer Access'}
                         </span>
                       </div>
                     </div>
@@ -824,6 +827,14 @@ export default function AdminUsersPage() {
                           borderColor: 'border-blue-200'
                         },
                         { 
+                          role: 'monitor', 
+                          title: 'Monitor', 
+                          description: 'View-only access to dashboard, orders, products, and categories',
+                          color: 'from-teal-500 to-cyan-500',
+                          bgColor: 'bg-teal-50',
+                          borderColor: 'border-teal-200'
+                        },
+                        { 
                           role: 'admin', 
                           title: 'Administrator', 
                           description: 'Full system access including user management and system settings',
@@ -842,7 +853,7 @@ export default function AdminUsersPage() {
                         return (
                         <button
                           key={roleOption.role}
-                          onClick={() => handleRoleUpdate(selectedUser._id, roleOption.role as 'admin' | 'staff' | 'customer')}
+                          onClick={() => handleRoleUpdate(selectedUser._id, roleOption.role as 'admin' | 'staff' | 'monitor' | 'customer')}
                           disabled={isDisabled}
                           className={`w-full p-6 rounded-2xl border-2 transition-all duration-200 text-left ${
                             roleOption.role === selectedUser.role

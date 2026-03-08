@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
@@ -15,9 +15,13 @@ export default function AdminLayout({
 }) {
   const { user, loading, isRefreshing } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [redirectingToLogin, setRedirectingToLogin] = useState(false);
-  
+
+  // Monitor role: only Dashboard, Orders, Products, Categories allowed
+  const MONITOR_ALLOWED_PATHS = ['/admin', '/admin/orders', '/admin/products', '/admin/categories'];
+
   // Session timeout management for admin users
   const { timeUntilTimeout, isWarningActive, extendSession } = useAdminSession();
 
@@ -27,7 +31,8 @@ export default function AdminLayout({
       return;
     }
 
-    const lacksAccess = !user || (user.role !== 'admin' && user.role !== 'staff');
+    const hasAdminAccess = user && (user.role === 'admin' || user.role === 'staff' || user.role === 'monitor');
+    const lacksAccess = !hasAdminAccess;
 
     if (lacksAccess) {
       if (!redirectingToLogin) {
@@ -39,6 +44,17 @@ export default function AdminLayout({
       setRedirectingToLogin(false);
     }
   }, [user, loading, router, redirectingToLogin]);
+
+  // Redirect monitor away from restricted admin pages
+  useEffect(() => {
+    if (loading || !user || user.role !== 'monitor') return;
+    const isAllowed = MONITOR_ALLOWED_PATHS.some(
+      (p) => pathname === p || (p !== '/admin' && pathname.startsWith(p + '/'))
+    );
+    if (!isAllowed) {
+      router.replace('/admin');
+    }
+  }, [user, loading, pathname, router]);
 
   if (loading) {
     return (
@@ -114,7 +130,7 @@ export default function AdminLayout({
     );
   }
 
-  if (!user || (user.role !== 'admin' && user.role !== 'staff')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'staff' && user.role !== 'monitor')) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 flex items-center justify-center">
         <div className="text-center">

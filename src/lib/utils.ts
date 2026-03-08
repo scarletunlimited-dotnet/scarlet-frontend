@@ -51,7 +51,7 @@ export const typeGuards = {
       value !== null &&
       typeof (value as User)._id === 'string' &&
       typeof (value as User).email === 'string' &&
-      ['admin', 'staff', 'customer'].includes((value as User).role)
+      ['admin', 'staff', 'monitor', 'customer'].includes((value as User).role)
     );
   },
 

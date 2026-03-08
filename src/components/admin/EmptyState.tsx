@@ -67,17 +67,17 @@ export function EmptyUsersState({ onCreateUser }: { onCreateUser: () => void }) 
   );
 }
 
-export function EmptyProductsState({ onCreateProduct }: { onCreateProduct: () => void }) {
+export function EmptyProductsState({ onCreateProduct }: { onCreateProduct?: () => void }) {
   return (
     <EmptyState
       icon={ShoppingBagIcon}
       title="No Products Found"
       description="Your product catalog is empty. Add your first product to start selling."
-      action={{
+      action={onCreateProduct ? {
         label: "Add Product",
         onClick: onCreateProduct,
         variant: "primary"
-      }}
+      } : undefined}
     />
   );
 }

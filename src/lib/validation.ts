@@ -335,7 +335,7 @@ export function validateUser(user: unknown): {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'admin' | 'staff' | 'customer';
+  role: 'admin' | 'staff' | 'monitor' | 'customer';
   isEmailVerified?: boolean;
   avatar?: string;
   phone?: string;
@@ -360,10 +360,10 @@ export function validateUser(user: unknown): {
     lastName: validateOptional(validateString, user.lastName),
     role: (() => {
       const role = validateString(user.role, 'role');
-      if (!['admin', 'staff', 'customer'].includes(role)) {
-        throw new ValidationError('Invalid user role', 'role', role, 'admin | staff | customer');
+      if (!['admin', 'staff', 'monitor', 'customer'].includes(role)) {
+        throw new ValidationError('Invalid user role', 'role', role, 'admin | staff | monitor | customer');
       }
-      return role as 'admin' | 'staff' | 'customer';
+      return role as 'admin' | 'staff' | 'monitor' | 'customer';
     })(),
     isEmailVerified: validateOptional(validateBoolean, user.isEmailVerified),
     avatar: validateOptional(validateString, user.avatar),
