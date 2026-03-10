@@ -91,7 +91,7 @@ export default function OrderDetailPage() {
   const params = useParams();
   const { addToast } = useToast();
   const { user } = useAuth();
-  const canMutate = user?.role !== 'monitor';
+  const canMutateOrders = true; // Monitor can update order status, payment, and print
   const [order, setOrder] = useState<AdminOrder | null>(null);
   const [timeline, setTimeline] = useState<OrderTimeline[]>([]);
   const [notes, setNotes] = useState<OrderNote[]>([]);
@@ -534,7 +534,7 @@ export default function OrderDetailPage() {
                 <PrinterIcon className="w-4 h-4 mr-2" />
                 Print
               </button>
-              {canMutate && (
+              {canMutateOrders && (
                 <>
                   <button
                     onClick={() => setShowStatusModal(true)}
@@ -781,7 +781,7 @@ export default function OrderDetailPage() {
                 <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
               </div>
               <div className="p-6 space-y-3">
-                {canMutate && order.isPreorder && order.status === 'preorder' && (
+                {canMutateOrders && order.isPreorder && order.status === 'preorder' && (
                   <button
                     onClick={() => {
                       if (confirm(`Fulfill preorder for ${order.orderNumber}? This will change the status to "confirmed" and notify the customer to pay the remaining 50%.`)) {
@@ -794,7 +794,7 @@ export default function OrderDetailPage() {
                     Fulfill Preorder
                   </button>
                 )}
-                {canMutate && (
+                {canMutateOrders && (
                   <button
                     onClick={() => setShowStatusModal(true)}
                     className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
@@ -817,7 +817,7 @@ export default function OrderDetailPage() {
                   <TruckIcon className="w-4 h-4 mr-3 text-gray-300" />
                   <span className="line-through">Add Tracking</span>
                 </button>
-                {canMutate && (
+                {canMutateOrders && (
                   <button 
                     onClick={() => {
                       if (order.status !== 'delivered' && order.status !== 'cancelled') {
@@ -871,7 +871,7 @@ export default function OrderDetailPage() {
                   <span className="text-sm text-gray-600">Payment Status</span>
                   <div className="flex items-center gap-2">
                     {getPaymentStatusBadge(order.paymentStatus)}
-                    {canMutate && (order.paymentStatus === 'partial' || order.paymentStatus === 'pending') && (
+                    {canMutateOrders && (order.paymentStatus === 'partial' || order.paymentStatus === 'pending') && (
                       <div className="relative">
                         <button
                           onClick={() => {
