@@ -829,7 +829,7 @@ export default function AdminUsersPage() {
                         { 
                           role: 'monitor', 
                           title: 'Monitor', 
-                          description: 'View-only access to dashboard, orders, products, and categories',
+                          description: 'View dashboard, products, categories. Full order management: update status, payment, print invoice',
                           color: 'from-teal-500 to-cyan-500',
                           bgColor: 'bg-teal-50',
                           borderColor: 'border-teal-200'

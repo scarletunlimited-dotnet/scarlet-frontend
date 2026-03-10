@@ -105,7 +105,7 @@ export default function OrdersPage() {
 
   const { addToast } = useToast();
   const { user } = useAuth();
-  const canMutate = user?.role !== 'monitor';
+  const canMutateOrders = true; // Monitor can update order status
 
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {
@@ -670,7 +670,7 @@ export default function OrdersPage() {
         )}
 
         {/* Bulk Actions - hidden for monitor (view only) */}
-        {canMutate && selectedOrders.length > 0 && (
+        {canMutateOrders && selectedOrders.length > 0 && (
           <div className="p-4 bg-blue-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -722,7 +722,7 @@ export default function OrdersPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  {canMutate && (
+                  {canMutateOrders && (
                     <th className="px-6 py-3 text-left">
                       <input
                         type="checkbox"
@@ -758,7 +758,7 @@ export default function OrdersPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-gray-50">
-                    {canMutate && (
+                    {canMutateOrders && (
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
@@ -816,7 +816,7 @@ export default function OrdersPage() {
                         >
                           View Details
                         </Link>
-                        {canMutate && (
+                        {canMutateOrders && (
                           <button
                             onClick={() => handleQuickStatusChange(order)}
                             className="text-blue-600 hover:text-blue-900 font-medium"
@@ -840,7 +840,7 @@ export default function OrdersPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    {canMutate && (
+                    {canMutateOrders && (
                       <input
                         type="checkbox"
                         checked={selectedOrders.includes(order._id)}
@@ -915,7 +915,7 @@ export default function OrdersPage() {
                       >
                         <EyeIcon className="w-4 h-4" />
                       </Link>
-                      {canMutate && (
+                      {canMutateOrders && (
                         <Link
                           href={`/admin/orders/${order._id}/edit`}
                           className="p-2 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50"
