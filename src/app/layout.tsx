@@ -102,10 +102,13 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
+verification: {
     google: process.env['NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION'],
     yandex: process.env['NEXT_PUBLIC_YANDEX_VERIFICATION'],
     yahoo: process.env['NEXT_PUBLIC_BING_SITE_VERIFICATION'],
+    other: {
+      'facebook-domain-verification': ['bueaabyph4rrii8jn1ov4qqy7osav1'],
+    },
   },
   other: {
     'fb:app_id': process.env['NEXT_PUBLIC_FACEBOOK_APP_ID'] || '',
