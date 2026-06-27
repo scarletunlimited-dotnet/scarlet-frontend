@@ -155,7 +155,8 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#dc2626" />
+<meta name="theme-color" content="#dc2626" />
+<meta name="facebook-domain-verification" content="bueaabyph4rrii8jn1ov4qqy7osav1" />        
         <StructuredData type="organization" />
         <StructuredData type="localBusiness" />
       </head>
